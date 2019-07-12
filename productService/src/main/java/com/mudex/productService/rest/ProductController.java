@@ -1,30 +1,43 @@
 package com.mudex.productService.rest;
 
 import com.mudex.productService.domain.Product;
-import com.mudex.productService.repositories.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-import java.util.Optional;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/products")
 public class ProductController {
+    private final ProductService productService;
 
-    @Autowired
-    private ProductRepository productRepository;
-
-
-    @GetMapping
-    public List<Product> getProducts(){
-        return Optional
-                .of(productRepository.findAll()).get();
+    @RequestMapping(value = "/all",method = RequestMethod.GET)
+    public ResponseEntity<List<Product>> getAllProducts(){
+        return new ResponseEntity<>(
+                productService
+                        .getAllProducts(),
+                HttpStatus.OK);
     }
 
-    @PostMapping
-    public Product saveProduct(@RequestBody Product product){
-        return (Product)productRepository.save(product);
+    @RequestMapping(value = "/{id}",method = RequestMethod.GET)
+    public ResponseEntity<Product> getProduct(@PathVariable("id") Long id){
+        return new ResponseEntity<>(
+                productService.getProductByID(id),
+                HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/{id}",method = RequestMethod.PATCH)
+    public ResponseEntity<?> updateProduct(@RequestBody Product product,@PathVariable("id") Long id){
+        productService.updateProduct(product,id);
+         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "",method = RequestMethod.POST)
+    public ResponseEntity<?> saveProduct(@RequestBody Product product){
+        productService.createProduct(product);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
 }
